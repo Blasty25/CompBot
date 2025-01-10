@@ -1,19 +1,11 @@
 // Copyright 2021-2024 FRC 6328
 // http://github.com/Mechanical-Advantage
-//
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// version 3 as published by the Free Software Foundation or
-// available in the root directory of this project.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
 
 package frc.robot.Subsystem.Swerve;
 
 import static edu.wpi.first.units.Units.*;
+import frc.robot.Subsystem.Swerve.ModuleIOInputsAutoLogged;
+
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -28,8 +20,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.subsystems.drive.GyroIOInputsAutoLogged;
-
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -43,6 +33,7 @@ public class Drive extends SubsystemBase {
 
   private final GyroIO gyroIO;
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
+  private final ModuleIOInputsAutoLogged inputs = new ModuleIOInputsAutoLogged();
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
   private final SysIdRoutine sysId;
 
@@ -71,7 +62,7 @@ public class Drive extends SubsystemBase {
     modules[2] = new Module(blModuleIO, 2);
     modules[3] = new Module(brModuleIO, 3);
 
-    // // Configure AutoBuilder for PathPlanner
+    // Configure AutoBuilder for PathPlanner
     // AutoBuilder.configureHolonomic(
     //     this::getPose,
     //     this::setPose,
@@ -113,8 +104,8 @@ public class Drive extends SubsystemBase {
   }
 
   public void periodic() {
-    // gyroIO.updateInputs(gyroInputs);
-    // Logger.processInputs("Drive/Gyro", gyroInputs);
+    gyroIO.updateInputs(gyroInputs);
+    Logger.processInputs("Drive/Gyro", gyroInputs);
     for (var module : modules) {
       module.periodic();
     }
