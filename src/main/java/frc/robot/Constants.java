@@ -9,8 +9,11 @@ import edu.wpi.first.math.util.Units;
 /** Add your docs here. */
 public class Constants {
     public class ElevatorConstants{
-        public static final int sparkyLeft = 1;
-        public static final int sparkyRight = 2;
+        public static final int sparkyLeft = 30;
+        public static final int sparkyRight = 31;
+        public static final double kP = 0.7;
+        public static final double kI = 0.0;
+        public static final double kD = 0.0;
     }
       public final class DriveConstants {
           public static final int frontLeftDrive = 1;

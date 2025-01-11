@@ -17,6 +17,7 @@ package frc.robot.Subsystem.Swerve;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkMax;
@@ -53,11 +54,9 @@ public class ModuleIOSparkMax implements ModuleIO {
   private final RelativeEncoder turnRelativeEncoder;
   private final AnalogInput turnAbsoluteEncoder;
 
-  private final boolean isTurnMotorInverted = true;
   private final Rotation2d absoluteEncoderOffset;
 
-
-  private SparkBaseConfig sparkyConfig;
+  private SparkMaxConfig sparkyConfig = new SparkMaxConfig();
 
   public ModuleIOSparkMax(int index) {
     switch (index) {
@@ -141,9 +140,11 @@ public class ModuleIOSparkMax implements ModuleIO {
   @Override
   public void setDriveBrakeMode(boolean enable) {
     if (enable){
-      driveSparkMax.configure(sparkyConfig.idleMode(IdleMode.kBrake), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+      // sparkyConfig.idleMode(IdleMode.kBrake);
+      // driveSparkMax.configure(sparkyConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }else {
-    driveSparkMax.configure(sparkyConfig.idleMode(IdleMode.kCoast), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    //   sparkyConfig.idleMode(IdleMode.kCoast);
+    // driveSparkMax.configure(sparkyConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
 
   }
@@ -151,9 +152,11 @@ public class ModuleIOSparkMax implements ModuleIO {
   @Override
   public void setTurnBrakeMode(boolean enable) {
     if (enable){
-      turnSparkMax.configure(sparkyConfig.idleMode(IdleMode.kBrake), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+      // sparkyConfig.idleMode(IdleMode.kBrake);
+      // turnSparkMax.configure(sparkyConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }else {
-    turnSparkMax.configure(sparkyConfig.idleMode(IdleMode.kCoast), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    //   sparkyConfig.idleMode(IdleMode.kCoast);
+    // turnSparkMax.configure(sparkyConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     } 
   }
 }

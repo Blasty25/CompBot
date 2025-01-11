@@ -10,13 +10,20 @@ import org.littletonrobotics.junction.AutoLog;
 public interface ElevatorIO {
     @AutoLog
     public static class ElevatorInputs{
-        public double appliedVolts = 0.0;
+        public double leftAppliedVolts = 0.0;
         public double leftSparkSet = 0.0;
+        public double rightAppliedVolts = 0.0;
         public double rightSparkSet = 0.0;
+        public double leftSparkTemp = 0.0;
+        public double rightSparkTemp = 0.0;
+        public boolean elevatorUp = false;
+        public boolean elevatorDown = false;
     }
 
     public default void updateInputs(ElevatorInputs inputs) {}
 
-    public default void setElevator(double volts) {}
+    public default void setElevator(double setPoint) {}
+
+    public default void setManualSpeed(double volts) {}
 
 }
