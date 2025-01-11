@@ -4,62 +4,66 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Subsystem.Elevator.ElevatorSubsystem;
-import frc.robot.Subsystem.Elevator.Commands.RunSetElevator;
-import frc.robot.Subsystem.Maple_Sim.Maple_Drive.MapleSimSwerve;
+import frc.robot.Subsystem.Maple_Sim.Maple_Drive.MapleSwerve;
 import frc.robot.Subsystem.Swerve.Drive;
 import frc.robot.Subsystem.Swerve.DriveCommands;
 import frc.robot.Subsystem.Swerve.GyroIOPigeon2;
+import frc.robot.Subsystem.Swerve.ModuleIOSim;
 import frc.robot.Subsystem.Swerve.ModuleIOSparkMax;
 
 public class RobotContainer {
   private CommandXboxController controller = new CommandXboxController(0);
-  private Drive drive = null;
-  private MapleSimSwerve mapleSimSwerve = null;
-  private ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
+  private Drive drive;
+  private ElevatorSubsystem elevator;
+  private MapleSwerve mapleSwerve;
 
   public RobotContainer() {
-    switch (Constants.currentMode) {
-      case REAL:
-        // drive = new Drive(
-        //     new GyroIOPigeon2(),
-        //     new ModuleIOSparkMax(0),
-        //     new ModuleIOSparkMax(1),
-        //     new ModuleIOSparkMax(2),
-        //     new ModuleIOSparkMax(3));
-        elevatorSubsystem = new ElevatorSubsystem();
-        break;
-      case SIM:
-        mapleSimSwerve = new MapleSimSwerve();
-        break;
 
+    if (Robot.isReal()) {
+      drive = new Drive(
+          new GyroIOPigeon2(),
+          new ModuleIOSparkMax(0),
+          new ModuleIOSparkMax(1),
+          new ModuleIOSparkMax(2),
+          new ModuleIOSparkMax(3));
+      elevator = new ElevatorSubsystem();
+    } else {
+      drive = new Drive(
+        new GyroIOPigeon2(),
+        new ModuleIOSim(),
+        new ModuleIOSim(),
+        new ModuleIOSim(),
+        new ModuleIOSim());
+      elevator = new ElevatorSubsystem();
+      mapleSwerve = new MapleSwerve();
+      
     }
     configureBindings();
   }
 
   private void configureBindings() {
-    // if (drive != null) {
-    //   drive.setDefaultCommand(
-    //       DriveCommands.joystickDrive(
-    //           drive,
-    //           () -> controller.getLeftY(),
-    //           () -> controller.getLeftX(),
-    //           () -> -controller.getRightX()));
-    //    controller.y().whileTrue(new RunSetElevator(elevatorSubsystem, 15));
-    //    controller.a().whileTrue(new RunSetElevator(elevatorSubsystem, -15));
-    // if (mapleSimSwerve != null) {
-    //     mapleSimSwerve.setDefaultCommand(
-    //         DriveCommands.joystickDrive(
-    //             drive,
-    //             () -> controller.getLeftY(),
-    //             () -> controller.getLeftX(),
-    //             () -> -controller.getRightX()));
-    //   }
-    // }
+
+    switch (Constants.simState) {
+      case Advantage:
+        drive.setDefaultCommand(
+            DriveCommands.joystickDrive(
+                drive,
+                () -> controller.getLeftY(),
+                () -> controller.getLeftX(),
+                () -> -controller.getRightX()));
+         elevator.setDefaultCommand(
+             elevator.elevatorHeight(
+                 () -> controller.getRightY()));
+        break;
+      case Maple:
+        // mapleSimSwerve.drive(T, 2, false, true);
+        break;
+    }
+
   }
 
   public Command getAutonomousCommand() {

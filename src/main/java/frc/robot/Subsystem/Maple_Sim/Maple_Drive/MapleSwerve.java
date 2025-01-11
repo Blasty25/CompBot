@@ -17,14 +17,15 @@ import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.SelfControlledSwerveDriveSimulation;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoral;
 
-public class MapleSimSwerve implements SwerveDrive {
+public class MapleSwerve implements SwerveDrive {
   private final SelfControlledSwerveDriveSimulation simulatedDrive;
   private final Field2d field2d;
 
-  public MapleSimSwerve() {
+  public MapleSwerve() {
     final DriveTrainSimulationConfig driveTrainSimulationConfig = DriveTrainSimulationConfig.Default()
         // Specify gyro type (for realistic gyro drifting and error simulation)
         .withGyro(COTS.ofPigeon2())
@@ -59,7 +60,7 @@ public class MapleSimSwerve implements SwerveDrive {
         new Translation2d(),
         fieldRelative,
         true);
-  }
+      }
 
   @Override
   public void setModuleStates(SwerveModuleState[] desiredStates) {

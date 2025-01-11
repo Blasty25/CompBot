@@ -8,10 +8,12 @@ import java.util.function.DoubleSupplier;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.AbsoluteEncoderConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
@@ -31,6 +33,7 @@ import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ElevatorConstants;
 
@@ -44,8 +47,6 @@ public class ElevatorSubsystem extends SubsystemBase implements ElevatorIO {
 
   private SparkMax sparkyLeft;
   private SparkMax sparkyRight;
-
-  private final Encoder m_Encoder = new Encoder(9, 10);
 
   private SparkMaxConfig sparkyLeftConfig = new SparkMaxConfig();
   private SparkMaxConfig sparkyRightConfig = new SparkMaxConfig();
@@ -68,7 +69,8 @@ public class ElevatorSubsystem extends SubsystemBase implements ElevatorIO {
 
       //end of sim stuff
 
-  public ElevatorSubsystem() {
+  public ElevatorSubsystem(){
+
     inputs = new ElevatorInputsAutoLogged();
     sparkyLeft = new SparkMax(ElevatorConstants.sparkyLeft, MotorType.kBrushless);
     sparkyRight = new SparkMax(ElevatorConstants.sparkyRight, MotorType.kBrushless);
@@ -102,7 +104,7 @@ public class ElevatorSubsystem extends SubsystemBase implements ElevatorIO {
 
     m_controller.setGoal(setPoint);
 
-    double pidOutput = m_controller.calculate(m_Encoder.getDistance());
+    double pidOutput = m_controller.calculate(sparkyLeft.getEncoder().getPosition());
     sparkyLeft.setVoltage(pidOutput);
     sparkyRight.setVoltage(pidOutput);
   }
@@ -117,7 +119,13 @@ public class ElevatorSubsystem extends SubsystemBase implements ElevatorIO {
     return this.run(() -> {
       setManualSpeed(volts.getAsDouble());
     });
+  }
 
+  public Command elevatorHeight(DoubleSupplier heightSupplier){
+    return new RunCommand(()->{
+      double height = heightSupplier.getAsDouble();
+      this.setManualSpeed(height);
+    },this);
   }
 
   @Override

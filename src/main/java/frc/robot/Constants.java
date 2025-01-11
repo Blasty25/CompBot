@@ -34,17 +34,12 @@ public class Constants {
           public static final double wheelDiameter = Units.metersToInches(0.0889);
         }
 
-      public static final Mode currentMode = Mode.SIM;
+      public static final Mode simState = Mode.Advantage;
 
           public static enum Mode {
-            /** Running on a real robot. */
-            REAL,
+            Advantage,
         
-            /** Running a physics simulator. */
-            SIM,
-        
-            /** Replaying from a log file. */
-            REPLAY
+            Maple
           }
         
 }
