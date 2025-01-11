@@ -17,6 +17,7 @@ import com.revrobotics.spark.config.AbsoluteEncoderConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -29,90 +30,29 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ElevatorConstants;
 
-public class ElevatorSubsystem extends SubsystemBase implements ElevatorIO {
+public class ElevatorSubsystem extends SubsystemBase {
   /** Creates a new ElevatorSubsystem. */
-  private final ProfiledPIDController m_controller = new ProfiledPIDController(
-      ElevatorConstants.kP,
-      ElevatorConstants.kI,
-      ElevatorConstants.kP,
-      new TrapezoidProfile.Constraints(2.45, 2.45));
-
-  private SparkMax sparkyLeft;
-  private SparkMax sparkyRight;
-
-  private SparkMaxConfig sparkyLeftConfig = new SparkMaxConfig();
-  private SparkMaxConfig sparkyRightConfig = new SparkMaxConfig();
-
   ElevatorInputsAutoLogged inputs;
+  private ElevatorIO io;
 
-  //From lines to 50 to 63 sim stuff have to move to a different class
-  private final LinearSystem<N2, N1, N2> elevator =
-     LinearSystemId.createElevatorSystem(DCMotor.getNEO(1), 3, 1.3, 1.5);
-
-
-  public ElevatorSim m_elevator = new ElevatorSim(
-      elevator,
-      DCMotor.getNEO(2),
-      Units.inchesToMeters(3),
-      Units.inchesToMeters(10),
-      false,
-      Units.inchesToMeters(0)
-      );
-
-      //end of sim stuff
-
-  public ElevatorSubsystem(){
-
+  public ElevatorSubsystem(ElevatorIO height){
     inputs = new ElevatorInputsAutoLogged();
-    sparkyLeft = new SparkMax(ElevatorConstants.sparkyLeft, MotorType.kBrushless);
-    sparkyRight = new SparkMax(ElevatorConstants.sparkyRight, MotorType.kBrushless);
-
-
-    //Configuring the Encoder on the Spark Max is not Avliable until complete documentation
-    //https://docs.revrobotics.com/brushless/revlib/revlib-overview/migrating-to-revlib-2025
-    //Using a external encoder for now
-    sparkyLeftConfig
-        .inverted(true)
-        .idleMode(IdleMode.kCoast);
-
-    sparkyRightConfig
-        .inverted(false)
-        .idleMode(IdleMode.kCoast);
-
-    sparkyLeft.configure(sparkyLeftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    sparkyRight.configure(sparkyRightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    this.io =  height;
   }
 
-  @Override
-  public void updateInputs(ElevatorInputs inputs) {
-    inputs.leftAppliedVolts = sparkyLeft.getAppliedOutput();
-    inputs.rightAppliedVolts = sparkyRight.getAppliedOutput();
-    inputs.leftSparkTemp = sparkyLeft.getMotorTemperature();
-    inputs.rightSparkTemp = sparkyRight.getMotorTemperature();
-  }
-
-  @Override
-  public void setElevator(double setPoint) {
-
-    m_controller.setGoal(setPoint);
-
-    double pidOutput = m_controller.calculate(sparkyLeft.getEncoder().getPosition());
-    sparkyLeft.setVoltage(pidOutput);
-    sparkyRight.setVoltage(pidOutput);
-  }
-
-  @Override
+  
   public void setManualSpeed(double volts) {
-    sparkyLeft.set(volts);
-    sparkyRight.set(volts);
+   io.setManualSpeed(volts);
   }
 
   public Command setDutyCycle(DoubleSupplier volts) {
@@ -121,11 +61,26 @@ public class ElevatorSubsystem extends SubsystemBase implements ElevatorIO {
     });
   }
 
-  public Command elevatorHeight(DoubleSupplier heightSupplier){
+  public Command elevatorJoystick(DoubleSupplier volts){
     return new RunCommand(()->{
-      double height = heightSupplier.getAsDouble();
-      this.setManualSpeed(height);
+      double value = volts.getAsDouble();
+      MathUtil.applyDeadband(value, 0.3);
+      setManualSpeed(value);
+    }, this);
+  }
+
+  public Command elevatorUp(){
+    return new RunCommand(()->{
+      double upVolts = 5;
+      this.setManualSpeed(upVolts);
     },this);
+  }
+
+  public Command elevatorDown(){
+    return new RunCommand(() -> {
+      double downVolts = -5;
+      this.setManualSpeed(downVolts);
+  }, this);
   }
 
   @Override

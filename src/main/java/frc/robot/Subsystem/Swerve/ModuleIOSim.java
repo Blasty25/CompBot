@@ -12,7 +12,18 @@
 // // GNU General Public License for more details.
 
 package frc.robot.Subsystem.Swerve;
+import static edu.wpi.first.units.Units.Inches;
+
+import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
+import org.ironmaple.simulation.drivesims.COTS;
+import org.ironmaple.simulation.drivesims.SelfControlledSwerveDriveSimulation;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
+import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoral;
+
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
@@ -29,9 +40,8 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
  * approximation for the behavior of the module.
  */
 public class ModuleIOSim implements ModuleIO {
-  private static final double LOOP_PERIOD_SECS = 0.02;
 
- 
+  private static final double LOOP_PERIOD_SECS = 0.02;
 
   private final Rotation2d turnAbsoluteInitPosition = new Rotation2d(Math.random() * 2.0 * Math.PI);
   private double driveAppliedVolts = 0.0;
@@ -42,8 +52,8 @@ public class ModuleIOSim implements ModuleIO {
   private final LinearSystem<N2, N1, N2> turnMotorSim =
       LinearSystemId.createDCMotorSystem(DCMotor.getNEO(1), 6.75, 0.025);
 
-  private DCMotorSim driveSim = new DCMotorSim(driveMotorSim, DCMotor.getNEO(1),0.025);
-  private DCMotorSim turnSim = new DCMotorSim(turnMotorSim, DCMotor.getNEO(1), 0.025);
+  private DCMotorSim driveSim = new DCMotorSim(driveMotorSim, DCMotor.getNEO(1));
+  private DCMotorSim turnSim = new DCMotorSim(turnMotorSim, DCMotor.getNEO(1));
 
   @Override
   public void updateInputs(ModuleIOInputs inputs) {
@@ -52,14 +62,14 @@ public class ModuleIOSim implements ModuleIO {
 
     inputs.drivePositionRad = driveSim.getAngularPositionRad();
     inputs.driveVelocityRadPerSec = driveSim.getAngularVelocityRadPerSec();
-    inputs.driveAppliedVolts = driveAppliedVolts;
+    inputs.driveAppliedVolts = driveSim.getAngularVelocityRadPerSec();
     inputs.driveCurrentAmps = new double[] {Math.abs(driveSim.getCurrentDrawAmps())};
 
     inputs.turnAbsolutePosition =
         new Rotation2d(turnSim.getAngularPositionRad()).plus(turnAbsoluteInitPosition);
     inputs.turnPosition = new Rotation2d(turnSim.getAngularPositionRad());
     inputs.turnVelocityRadPerSec = turnSim.getAngularVelocityRadPerSec();
-    inputs.turnAppliedVolts = turnAppliedVolts;
+    inputs.turnAppliedVolts = turnSim.getAngularVelocityRadPerSec();
     inputs.turnCurrentAmps = new double[] {Math.abs(turnSim.getCurrentDrawAmps())};
   }
 

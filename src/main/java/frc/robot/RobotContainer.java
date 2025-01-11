@@ -4,9 +4,15 @@
 
 package frc.robot;
 
+import java.util.Map;
+
+import org.ironmaple.simulation.SimulatedArena;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Subsystem.Elevator.ElevatorIOSim;
+import frc.robot.Subsystem.Elevator.ElevatorIOSparkMax;
 import frc.robot.Subsystem.Elevator.ElevatorSubsystem;
 import frc.robot.Subsystem.Maple_Sim.Maple_Drive.MapleSwerve;
 import frc.robot.Subsystem.Swerve.Drive;
@@ -19,7 +25,8 @@ public class RobotContainer {
   private CommandXboxController controller = new CommandXboxController(0);
   private Drive drive;
   private ElevatorSubsystem elevator;
-  private MapleSwerve mapleSwerve;
+  private ElevatorIOSim elevatorSim = new ElevatorIOSim();
+  private ElevatorIOSparkMax realElevator = new ElevatorIOSparkMax();
 
   public RobotContainer() {
 
@@ -30,7 +37,7 @@ public class RobotContainer {
           new ModuleIOSparkMax(1),
           new ModuleIOSparkMax(2),
           new ModuleIOSparkMax(3));
-      elevator = new ElevatorSubsystem();
+      elevator = new ElevatorSubsystem(realElevator);
     } else {
       drive = new Drive(
         new GyroIOPigeon2(),
@@ -38,9 +45,7 @@ public class RobotContainer {
         new ModuleIOSim(),
         new ModuleIOSim(),
         new ModuleIOSim());
-      elevator = new ElevatorSubsystem();
-      mapleSwerve = new MapleSwerve();
-      
+      elevator = new ElevatorSubsystem(elevatorSim);      
     }
     configureBindings();
   }
@@ -55,9 +60,13 @@ public class RobotContainer {
                 () -> controller.getLeftY(),
                 () -> controller.getLeftX(),
                 () -> -controller.getRightX()));
-         elevator.setDefaultCommand(
-             elevator.elevatorHeight(
-                 () -> controller.getRightY()));
+                 controller.povUp().onTrue(elevator.elevatorUp());
+                 controller.povDown().onTrue(elevator.elevatorDown());
+        elevator.setDefaultCommand(
+            elevator.elevatorJoystick(
+              () -> controller.getRightY()
+            )
+        );
         break;
       case Maple:
         // mapleSimSwerve.drive(T, 2, false, true);
