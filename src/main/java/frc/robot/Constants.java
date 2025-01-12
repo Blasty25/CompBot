@@ -14,6 +14,8 @@ public class Constants {
         public static final double kP = 0.7;
         public static final double kI = 0.0;
         public static final double kD = 0.0;
+
+        public static final double maxElevatorSpeed = 0.2;
     }
       public final class DriveConstants {
           public static final int frontLeftDrive = 1;

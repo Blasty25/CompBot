@@ -88,8 +88,8 @@ public class ElevatorIOSparkMax implements ElevatorIO {
 
   @Override
   public void setElevator(double setPoint) {
-    sparkyLeft.set(m_controller.calculate(setPoint / encoder.getPosition()));
-    sparkyRight.set(m_controller.calculate(setPoint / encoder.getPosition()));
+    sparkyLeft.set((m_controller.calculate(setPoint / encoder.getPosition())) * ElevatorConstants.maxElevatorSpeed);
+    sparkyRight.set(m_controller.calculate(setPoint / encoder.getPosition()) * ElevatorConstants.maxElevatorSpeed);
     // sparkyLeft.getClosedLoopController().setReference(setPoint, ControlType.kPosition);
     // sparkyRight.getClosedLoopController().setReference(setPoint, ControlType.kPosition);
     Logger.recordOutput("Encoder", encoder.getPosition());
