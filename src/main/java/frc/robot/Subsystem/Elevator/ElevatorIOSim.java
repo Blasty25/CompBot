@@ -21,9 +21,9 @@ public class ElevatorIOSim implements ElevatorIO {
 
 
     private final LinearSystem<N2, N1, N2> leftSim = 
-        LinearSystemId.createElevatorSystem(DCMotor.getNEO(1), 1, 1.3, 1.5);
+        LinearSystemId.createElevatorSystem(DCMotor.getNEO(1), Units.lbsToKilograms(14), 1.3, 1.5);
     private final LinearSystem <N2, N1, N2> rightSim =
-        LinearSystemId.createElevatorSystem(DCMotor.getNEO(1), 1, 1.3, 1.5);
+        LinearSystemId.createElevatorSystem(DCMotor.getNEO(1), Units.lbsToKilograms(14), 1.3, 1.5);
 
     DCMotorSim sparkyLeft = new DCMotorSim(leftSim, DCMotor.getNEO(1));
     DCMotorSim sparkyRight = new DCMotorSim(rightSim, DCMotor.getNEO(1));

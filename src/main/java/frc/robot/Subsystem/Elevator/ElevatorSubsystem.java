@@ -9,43 +9,35 @@ import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.AbsoluteEncoder;
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.AbsoluteEncoderConfig;
-import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.SparkMaxAlternateEncoder;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.ElevatorFeedforward;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N2;
-import edu.wpi.first.math.system.LinearSystem;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.ProfiledPIDCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.ElevatorConstants;
-
+import frc.robot.Subsystem.Elevator.ElevatorIOSparkMax;
 public class ElevatorSubsystem extends SubsystemBase {
   /** Creates a new ElevatorSubsystem. */
   ElevatorInputsAutoLogged inputs;
   private ElevatorIO io;
+  private final MechanismLigament2d m_elevator;
+  private double elevatorMin = 0.5;
+  private Encoder simEncoder = new Encoder(0, 1);
+  private ElevatorIOSparkMax elevatorSet;
+
 
   public ElevatorSubsystem(ElevatorIO height){
+  
+    simEncoder.setDistancePerPulse(0.01);
+    Mechanism2d mech = new Mechanism2d(3, 3);
+    MechanismRoot2d root = mech.getRoot("elevator", 2, 0);
+    m_elevator = root.append(new MechanismLigament2d("elevator", elevatorMin, 90));
+    SmartDashboard.putData("Mech 2d", mech);
     inputs = new ElevatorInputsAutoLogged();
     this.io =  height;
   }
@@ -53,41 +45,41 @@ public class ElevatorSubsystem extends SubsystemBase {
   
   public void setManualSpeed(double volts) {
    io.setManualSpeed(volts);
+   m_elevator.setLength(elevatorMin + simEncoder.getDistance());
   }
 
-  public Command setDutyCycle(DoubleSupplier volts) {
-    return this.run(() -> {
-      setManualSpeed(volts.getAsDouble());
-    });
-  }
+  // public Command setDutyCycle(DoubleSupplier volts) {
+  //   return this.run(() -> {
+  //     setManualSpeed(volts.getAsDouble());
+  //   });
+  // }
 
   public Command elevatorJoystick(DoubleSupplier volts){
     return new RunCommand(()->{
       double value = volts.getAsDouble();
       MathUtil.applyDeadband(value, 0.3);
-      setManualSpeed(value);
+      elevatorSet.setElevator(value);
     }, this);
   }
 
   public Command elevatorUp(){
     return new RunCommand(()->{
-      double upVolts = 5;
+      double upVolts = 1;
       this.setManualSpeed(upVolts);
     },this);
   }
 
   public Command elevatorDown(){
     return new RunCommand(() -> {
-      double downVolts = -5;
-      this.setManualSpeed(downVolts);
+      double downVolts = -1;
+      elevatorSet.setElevator(downVolts);
   }, this);
-  }
+  }  
+
 
   @Override
   public void periodic() {
-    Logger.processInputs("Elevator", inputs);
 
-    SmartDashboard.putData("Elevator 1 volt", setDutyCycle(() -> 1));
-    SmartDashboard.putData("Elevator -1 volt", setDutyCycle(() -> -1));
+    Logger.processInputs("Elevator", inputs);
   }
 }
