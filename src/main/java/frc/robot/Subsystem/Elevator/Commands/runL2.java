@@ -27,6 +27,6 @@ public class runL2 extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    elevator.setElevator(360);
+    elevator.setElevator(11480.33);
   }
 }
