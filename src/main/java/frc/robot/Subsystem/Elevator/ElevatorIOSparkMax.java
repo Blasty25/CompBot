@@ -35,9 +35,6 @@ public class ElevatorIOSparkMax implements ElevatorIO {
     ElevatorConstants.kP,
     new TrapezoidProfile.Constraints(2.45, 2.45));
 
-    private AbsoluteEncoder encoder;
-    private PIDController pid = new PIDController(0.5, 0, 0);
-
     private SparkMax sparkyLeft;
     private SparkMax sparkyRight;
 
@@ -48,37 +45,20 @@ public class ElevatorIOSparkMax implements ElevatorIO {
     inputs = new ElevatorInputsAutoLogged();
     sparkyLeft = new SparkMax(ElevatorConstants.sparkyLeft, MotorType.kBrushless);
     sparkyRight = new SparkMax(ElevatorConstants.sparkyRight, MotorType.kBrushless);
-    encoder = sparkyLeft.getAbsoluteEncoder();
 
-
-    //Configuring the Encoder on the Spark Max is not Avliable until complete documentation
-    //https://docs.revrobotics.com/brushless/revlib/revlib-overview/migrating-to-revlib-2025
-    //Using a external encoder for now
     sparkyLeftConfig
         .inverted(true)
         .idleMode(IdleMode.kCoast);
-    sparkyLeftConfig.absoluteEncoder
-      .positionConversionFactor(6)
-      .velocityConversionFactor(6.0/60.0);
-    sparkyLeftConfig.closedLoop
-      .pid(0.5, 0, 0)
-      .feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
 
     sparkyRightConfig
         .inverted(false)
         .idleMode(IdleMode.kCoast);
-    sparkyRightConfig.absoluteEncoder
-        .positionConversionFactor(6)
-        .velocityConversionFactor(6.0/60.0);
-    sparkyRightConfig.closedLoop
-        .pid(0.50, 0, 0)
-        .feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
 
     sparkyLeft.configure(sparkyLeftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     sparkyRight.configure(sparkyRightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
 
-      @Override
+  @Override
   public void updateInputs(ElevatorInputs inputs) {
     inputs.leftAppliedVolts = sparkyLeft.getAppliedOutput();
     inputs.rightAppliedVolts = sparkyRight.getAppliedOutput();
@@ -88,19 +68,15 @@ public class ElevatorIOSparkMax implements ElevatorIO {
 
   @Override
   public void setElevator(double setPoint) {
-    sparkyLeft.set((m_controller.calculate(setPoint / encoder.getPosition())) * ElevatorConstants.maxElevatorSpeed);
-    sparkyRight.set(m_controller.calculate(setPoint / encoder.getPosition()) * ElevatorConstants.maxElevatorSpeed);
-    // sparkyLeft.getClosedLoopController().setReference(setPoint, ControlType.kPosition);
-    // sparkyRight.getClosedLoopController().setReference(setPoint, ControlType.kPosition);
-    Logger.recordOutput("Encoder", encoder.getPosition());
-    
-
+    sparkyLeft.set(m_controller.calculate(setPoint / sparkyLeft.getAbsoluteEncoder().getPosition() * ElevatorConstants.maxElevatorSpeed));
+    sparkyRight.set(m_controller.calculate(setPoint / sparkyRight.getAbsoluteEncoder().getPosition() * ElevatorConstants.maxElevatorSpeed));
+    Logger.recordOutput("Left Encoder", sparkyLeft.getAbsoluteEncoder().getPosition());
+    Logger.recordOutput("Right Encoder", sparkyRight.getAbsoluteEncoder().getPosition());
     Logger.recordOutput("Sparky Left Output", setPoint);
     Logger.recordOutput("Sparky Right Output", setPoint);
-
   }
 
-    @Override
+  @Override
   public void setManualSpeed(double volts) {
     sparkyLeft.set(volts);
     Logger.recordOutput("left Volts", volts);
