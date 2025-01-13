@@ -65,11 +65,11 @@ public class RobotContainer {
                 () -> controller.getLeftY(),
                 () -> controller.getLeftX(),
                 () -> -controller.getRightX()));
-        controller.leftBumper().whileTrue(new runSetPoint(realElevator , 360));
-        controller.povDown().whileTrue(new runL1(realElevator, 6480));
-        controller.povLeft().whileTrue(new runL2(realElevator, 11480.33));
-        controller.povRight().whileTrue(new runL3(realElevator, 17149.61));
-        controller.povUp().whileTrue(new runL4(realElevator, 25936.99));
+        controller.leftBumper().whileTrue(new runSetPoint(elevator , 360));
+        controller.povDown().whileTrue(new runL1(elevator, 6480));
+        controller.povLeft().whileTrue(new runL2(elevator, 11480.33));
+        controller.povRight().whileTrue(new runL3(elevator, 17149.61));
+        controller.povUp().whileTrue(new runL4(elevator, 25936.99));
 
         
         // elevator.setDefaultCommand(

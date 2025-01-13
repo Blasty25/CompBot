@@ -23,14 +23,19 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ElevatorConstants;
-import frc.robot.Subsystem.Elevator.ElevatorIOSparkMax;
-public class ElevatorSubsystem extends SubsystemBase {
+public class ElevatorSubsystem extends SubsystemBase{
   /** Creates a new ElevatorSubsystem. */
   ElevatorInputsAutoLogged inputs;
   private ElevatorIO io;
   private final MechanismLigament2d m_elevator;
   private double elevatorMin = 0.5;
   private ElevatorIOSparkMax elevatorSet;
+
+  private final ProfiledPIDController m_controller = new ProfiledPIDController(
+    ElevatorConstants.kP,
+    ElevatorConstants.kI,
+    ElevatorConstants.kP,
+    new TrapezoidProfile.Constraints(2.45, 2.45));
 
 
   public ElevatorSubsystem(ElevatorIO height){
@@ -43,7 +48,6 @@ public class ElevatorSubsystem extends SubsystemBase {
     this.io =  height;
   }
 
-
   public Command elevatorJoystick(DoubleSupplier volts){
     return new RunCommand(()->{
       double value = volts.getAsDouble();
@@ -52,8 +56,20 @@ public class ElevatorSubsystem extends SubsystemBase {
     }, this);
   }
 
+  public void setElevator(double setPoint) {
+    io.setElevator(m_controller.calculate(setPoint, elevatorSet.leftPosition * ElevatorConstants.maxElevatorSpeed));
+    io.setElevator(m_controller.calculate(setPoint, elevatorSet.rightPosition * ElevatorConstants.maxElevatorSpeed));
+  }
+
+  public Command runCurrentZeroing() {
+    return this.run(() -> io.setElevator(-1.0))
+        .until(() -> inputs.elevatorVolts[0] > 40.0)
+        .finallyDo(() -> io.resetEncoder(0.0));
+  }
+
   @Override
   public void periodic() {
-    Logger.processInputs("Elevator", inputs);
+    Logger.processInputs("Elevator", inputs); 
   }
+
 }

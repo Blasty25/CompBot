@@ -32,18 +32,18 @@ public class ElevatorIOSim implements ElevatorIO {
     double rightAppliedVolts = 0.0;
 
       //From lines to 50 to 63 sim stuff have to move to a different class
-//   private final LinearSystem<N2, N1, N2> elevator =
-//      LinearSystemId.createElevatorSystem(DCMotor.getNEO(1), 3, 1.3, 1.5);
+  private final LinearSystem<N2, N1, N2> elevator =
+     LinearSystemId.createElevatorSystem(DCMotor.getNEO(1), 3, 1.3, 1.5);
 
 
-//   public ElevatorSim m_elevator = new ElevatorSim(
-//       elevator,
-//       DCMotor.getNEO(2),
-//       Units.inchesToMeters(3),
-//       Units.inchesToMeters(10),
-//       false,
-//       Units.inchesToMeters(0)
-//       );
+  public ElevatorSim m_elevator = new ElevatorSim(
+      elevator,
+      DCMotor.getNEO(2),
+      Units.inchesToMeters(3),
+      Units.inchesToMeters(10),
+      false,
+      Units.inchesToMeters(0)
+      );
 
     @Override
     public void updateInputs(ElevatorInputs inputs) {
@@ -62,6 +62,10 @@ public class ElevatorIOSim implements ElevatorIO {
         Logger.recordOutput("Right Elevator Output", rightAppliedVolts);
         sparkyLeft.setInputVoltage(leftAppliedVolts);
         sparkyRight.setInputVoltage(rightAppliedVolts);
+    }
+    @Override
+    public void resetEncoder(double position) {
+        m_elevator.setState(position, 0.0);
     }
 
 }

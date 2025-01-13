@@ -15,12 +15,15 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.LimitSwitchConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+import com.revrobotics.spark.config.LimitSwitchConfig.Type;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.ElevatorConstants;
 
@@ -29,14 +32,8 @@ public class ElevatorIOSparkMax implements ElevatorIO {
     
     ElevatorInputsAutoLogged inputs;
 
-    private final ProfiledPIDController m_controller = new ProfiledPIDController(
-    ElevatorConstants.kP,
-    ElevatorConstants.kI,
-    ElevatorConstants.kP,
-    new TrapezoidProfile.Constraints(2.45, 2.45));
-
-    private SparkMax sparkyLeft;
-    private SparkMax sparkyRight;
+    public SparkMax sparkyLeft;
+    public SparkMax sparkyRight;
 
     private SparkMaxConfig sparkyLeftConfig = new SparkMaxConfig();
     private SparkMaxConfig sparkyRightConfig = new SparkMaxConfig();
@@ -49,14 +46,24 @@ public class ElevatorIOSparkMax implements ElevatorIO {
     sparkyLeftConfig
         .inverted(true)
         .idleMode(IdleMode.kCoast);
+    sparkyLeftConfig.encoder
+      .positionConversionFactor(6)
+      .velocityConversionFactor(1.0/10.0);
 
     sparkyRightConfig
         .inverted(false)
         .idleMode(IdleMode.kCoast);
+    sparkyRightConfig.encoder
+      .positionConversionFactor(6)
+      .velocityConversionFactor(1.0/10.0);
 
     sparkyLeft.configure(sparkyLeftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    sparkyRight.configure(sparkyRightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    sparkyRight.configure(sparkyRightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters); 
     }
+    
+  public double leftPosition = sparkyLeft.getEncoder().getPosition();
+  public double rightPosition = sparkyRight.getEncoder().getPosition();
+
 
   @Override
   public void updateInputs(ElevatorInputs inputs) {
@@ -68,19 +75,26 @@ public class ElevatorIOSparkMax implements ElevatorIO {
 
   @Override
   public void setElevator(double setPoint) {
-    sparkyLeft.set(m_controller.calculate(setPoint / sparkyLeft.getAbsoluteEncoder().getPosition() * ElevatorConstants.maxElevatorSpeed));
-    sparkyRight.set(m_controller.calculate(setPoint / sparkyRight.getAbsoluteEncoder().getPosition() * ElevatorConstants.maxElevatorSpeed));
-    Logger.recordOutput("Left Encoder", sparkyLeft.getAbsoluteEncoder().getPosition());
-    Logger.recordOutput("Right Encoder", sparkyRight.getAbsoluteEncoder().getPosition());
+    sparkyLeft.set(setPoint);
+    sparkyRight.set(setPoint);
+
+    Logger.recordOutput("Left Encoder", sparkyLeft.getEncoder().getPosition());
+    Logger.recordOutput("Right Encoder", sparkyRight.getEncoder().getPosition());
     Logger.recordOutput("Sparky Left Output", setPoint);
     Logger.recordOutput("Sparky Right Output", setPoint);
   }
-
+  
   @Override
   public void setManualSpeed(double volts) {
     sparkyLeft.set(volts);
     Logger.recordOutput("left Volts", volts);
     Logger.recordOutput("right Volts", volts);
+  }
+
+  @Override
+  public void resetEncoder(double position) {
+   sparkyLeft.getEncoder().setPosition(0);
+   sparkyRight.getEncoder().setPosition(0);
   }
 
 }

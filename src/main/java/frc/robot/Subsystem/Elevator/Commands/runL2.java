@@ -7,13 +7,14 @@ package frc.robot.Subsystem.Elevator.Commands;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Subsystem.Elevator.ElevatorIOSparkMax;
+import frc.robot.Subsystem.Elevator.ElevatorSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class runL2 extends Command {
-  ElevatorIOSparkMax elevator;
+  ElevatorSubsystem elevator;
   private double setpoint;
   /** Creates a new runSetPoint. */
-  public runL2(ElevatorIOSparkMax elevator, double setpoint) {
+  public runL2(ElevatorSubsystem elevator, double setpoint) {
     this.elevator = elevator;
     this.setpoint = setpoint;
     // Use addRequirements() here to declare subsystem dependencies.
