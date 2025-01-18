@@ -12,6 +12,7 @@ import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.spark.SparkMaxAlternateEncoder;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Encoder;
@@ -27,9 +28,6 @@ public class ElevatorSubsystem extends SubsystemBase{
   /** Creates a new ElevatorSubsystem. */
   ElevatorInputsAutoLogged inputs;
   private ElevatorIO io;
-  private final MechanismLigament2d m_elevator;
-  private double elevatorMin = 0.5;
-  private ElevatorIOSparkMax elevatorSet;
 
   private final ProfiledPIDController m_controller = new ProfiledPIDController(
     ElevatorConstants.kP,
@@ -37,35 +35,34 @@ public class ElevatorSubsystem extends SubsystemBase{
     ElevatorConstants.kP,
     new TrapezoidProfile.Constraints(2.45, 2.45));
 
+  private final ElevatorFeedforward m_elevator = new ElevatorFeedforward(
+    ElevatorConstants.kS,
+    ElevatorConstants.kG,
+    ElevatorConstants.kV,
+    ElevatorConstants.kA
+  );
+
+
+
 
   public ElevatorSubsystem(ElevatorIO height){
-    Mechanism2d mech = new Mechanism2d(3, 3);
-    MechanismRoot2d root = mech.getRoot("elevator", 2, 0);
-    m_elevator = root.append(new MechanismLigament2d("elevator", elevatorMin, 90));
-    SmartDashboard.putData("Mech 2d", mech);
-
     inputs = new ElevatorInputsAutoLogged();
     this.io =  height;
   }
 
-  public Command elevatorJoystick(DoubleSupplier volts){
-    return new RunCommand(()->{
-      double value = volts.getAsDouble();
-      MathUtil.applyDeadband(value, 0.3);
-      elevatorSet.setElevator(value);
-    }, this);
-  }
-
   public void setElevator(double setPoint) {
-    io.setElevator(m_controller.calculate(setPoint, elevatorSet.leftPosition * ElevatorConstants.maxElevatorSpeed));
-    io.setElevator(m_controller.calculate(setPoint, elevatorSet.rightPosition * ElevatorConstants.maxElevatorSpeed));
+    double feedFowardOutput = m_elevator.calculate(inputs.encoderVelocity);
+    double feedbackOutput = m_controller.calculate(inputs.position, setPoint);
+    setPoint = feedFowardOutput + feedbackOutput;
+    io.setElevator(setPoint);
+    Logger.recordOutput("Spark Max Encoder", inputs.position);
   }
 
-  public Command runCurrentZeroing() {
-    return this.run(() -> io.setElevator(-1.0))
-        .until(() -> inputs.elevatorVolts[0] > 40.0)
-        .finallyDo(() -> io.resetEncoder(0.0));
-  }
+  public Command resetEncoder(){
+    return new RunCommand(()->{
+      io.resetEncoder();
+    }, this);
+    }
 
   @Override
   public void periodic() {

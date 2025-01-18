@@ -11,7 +11,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 
-package frc.robot.Subsystem.Swerve;
+package frc.robot.Subsystem.Swerve.Commands;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -23,21 +23,25 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.RunCommand;
+import frc.robot.Subsystem.Swerve.Drive;
 
 import java.util.function.DoubleSupplier;
 
 public class DriveCommands {
   private static final double DEADBAND = 0.1;
+
+  private DriveCommands() {}
+
   /**
    * Field relative drive command using two joysticks (controlling linear and angular velocities).
    */
+  @SuppressWarnings("removal")
 public static Command joystickDrive(
       Drive drive,
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
       DoubleSupplier omegaSupplier) {
-    return new RunCommand(
+    return Commands.run(
         () -> {
           // Apply deadband
           double linearMagnitude =

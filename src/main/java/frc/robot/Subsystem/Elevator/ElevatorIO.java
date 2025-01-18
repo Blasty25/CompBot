@@ -17,8 +17,8 @@ public interface ElevatorIO {
         public double rightSparkSet = 0.0;
         public double leftSparkTemp = 0.0;
         public double rightSparkTemp = 0.0;
-        public boolean elevatorUp = false;
-        public boolean elevatorDown = false;
+        public double position = 0.0;
+        public double encoderVelocity = 0.0;
     }
 
     public default void updateInputs(ElevatorInputs inputs) {}
