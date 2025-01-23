@@ -23,14 +23,7 @@ public interface ElevatorIO {
 
     public default void updateInputs(ElevatorInputs inputs) {}
 
-    public default void setElevator(double setPoint) {}
+    public default void setElevator(double setPoint, double voltage) {}
 
     public default void setManualSpeed(double volts) {}
-
-    public void resetEncoder(final double position);
-
-    public default void resetEncoder() {
-      resetEncoder(0.0);
-    }
-
 }

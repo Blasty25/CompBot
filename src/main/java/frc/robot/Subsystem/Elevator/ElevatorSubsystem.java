@@ -15,11 +15,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -33,7 +29,7 @@ public class ElevatorSubsystem extends SubsystemBase{
     ElevatorConstants.kP,
     ElevatorConstants.kI,
     ElevatorConstants.kP,
-    new TrapezoidProfile.Constraints(2.45, 2.45));
+    new TrapezoidProfile.Constraints(1, 1));
 
   private final ElevatorFeedforward m_elevator = new ElevatorFeedforward(
     ElevatorConstants.kS,
@@ -41,6 +37,11 @@ public class ElevatorSubsystem extends SubsystemBase{
     ElevatorConstants.kV,
     ElevatorConstants.kA
   );
+
+
+  private final TrapezoidProfile profile = new TrapezoidProfile(new TrapezoidProfile.Constraints(1, 1));
+  private TrapezoidProfile.State profileState = new TrapezoidProfile.State(0, 0);
+  private TrapezoidProfile.State futureProfileState = new TrapezoidProfile.State(0, 0);
 
 
 
@@ -51,21 +52,24 @@ public class ElevatorSubsystem extends SubsystemBase{
   }
 
   public void setElevator(double setPoint) {
-    double feedFowardOutput = m_elevator.calculate(inputs.encoderVelocity);
-    double feedbackOutput = m_controller.calculate(inputs.position, setPoint);
-    setPoint = feedFowardOutput + feedbackOutput;
-    io.setElevator(setPoint);
-    Logger.recordOutput("Spark Max Encoder", inputs.position);
+    futureProfileState = profile.calculate(0.02, profileState, new TrapezoidProfile.State(setPoint, 0.0)); 
+    io.setElevator(profileState.position, m_elevator.calculate(profileState.velocity, futureProfileState.velocity));
+    profileState = futureProfileState;
   }
 
-  public Command resetEncoder(){
-    return new RunCommand(()->{
-      io.resetEncoder();
-    }, this);
-    }
+  public void setManualSpeed(double position){
+    io.setManualSpeed(position);
+  }
+
+  // public Command resetEncoder(){
+  //   return new RunCommand(()->{
+  //     io.resetEncoder();
+  //   }, this);
+  //   }
 
   @Override
   public void periodic() {
+    io.updateInputs(inputs);
     Logger.processInputs("Elevator", inputs); 
   }
 

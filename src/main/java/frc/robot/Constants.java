@@ -16,29 +16,26 @@ public class Constants {
   public class ElevatorConstants {
     public static final int sparkyLeft = 30;
     public static final int sparkyRight = 31;
-    public static final double kP = 0.7;
+
+    public static final double kP = 8.8431;
     public static final double kI = 0.0;
-    public static final double kD = 0.0;
-    public static final double kS = 0.2; 
-    public static final double kG = 0.5;
-    public static final double kV = 1.0;
-    public static final double kA = 0.1;
+    public static final double kD = 1.4176;
+    
+    public static final double kS = 0.39969; 
+    public static final double kG = 0.14159;
+    public static final double kV = 4.9841;
+    public static final double kA =  0.54919;
 
     public static final double maxElevatorSpeed = 0.2;
+
+    public static final double positionConversionFactor = 2.0 * Math.PI * Units.inchesToMeters(0.918) / 6;
+    public static final double velocityConversionFactor = positionConversionFactor / 60.0;
   }
 
   public final class MapleSimSwerve {
     public static final double driveGearRatio = 2.5;
     public static final double turnGearRatio = 1.7;
     public static final double wheelDiameter = Units.metersToInches(0.0889);
-  }
-
-  public static final Mode simState = Mode.Advantage;
-
-  public static enum Mode {
-    Advantage,
-
-    Maple
   }
 
 

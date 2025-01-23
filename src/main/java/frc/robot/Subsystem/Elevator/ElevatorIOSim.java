@@ -63,9 +63,4 @@ public class ElevatorIOSim implements ElevatorIO {
         sparkyLeft.setInputVoltage(leftAppliedVolts);
         sparkyRight.setInputVoltage(rightAppliedVolts);
     }
-    @Override
-    public void resetEncoder(double position) {
-        m_elevator.setState(position, 0.0);
-    }
-
 }

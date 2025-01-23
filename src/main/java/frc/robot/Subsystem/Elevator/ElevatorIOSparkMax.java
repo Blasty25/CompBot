@@ -5,12 +5,21 @@
 package frc.robot.Subsystem.Elevator;
 
 import org.littletonrobotics.junction.Logger;
+
+import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.ctre.phoenix6.signals.ControlModeValue;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.Constants.ElevatorConstants;
 
 /** Add your docs here. */
@@ -21,39 +30,45 @@ public class ElevatorIOSparkMax implements ElevatorIO {
     public SparkMax sparkyLeft;
     public SparkMax sparkyRight;
 
-    private SparkMaxConfig sparkyLeftConfig = new SparkMaxConfig();
-    private SparkMaxConfig sparkyRightConfig = new SparkMaxConfig();
+    private final RelativeEncoder encoder;
+    private final SparkClosedLoopController feedbackLeft;
+    private final SparkClosedLoopController feedbackRight;
 
     public ElevatorIOSparkMax(){
 
     inputs = new ElevatorInputsAutoLogged();
-    sparkyLeft = new SparkMax(ElevatorConstants.sparkyLeft, MotorType.kBrushless);
-    sparkyRight = new SparkMax(ElevatorConstants.sparkyRight, MotorType.kBrushless);
+    sparkyLeft = new SparkMax(30, MotorType.kBrushless);
+    sparkyRight = new SparkMax( 31,MotorType.kBrushless);
 
-    sparkyLeftConfig
-        .inverted(true)
-        .idleMode(IdleMode.kCoast)
-        .smartCurrentLimit(10);  // I did some math there is 0.6 resistance and that multipy by 10 is 6 volts.
-    sparkyLeftConfig.encoder
-      .positionConversionFactor(6)
-      .velocityConversionFactor(1.0/10.0);
+    SparkMaxConfig config = new SparkMaxConfig();
+    config
+        .smartCurrentLimit(40)
+        .idleMode(IdleMode.kCoast);
+    config.encoder
+        .positionConversionFactor(ElevatorConstants.positionConversionFactor)
+        .velocityConversionFactor(ElevatorConstants.velocityConversionFactor);
+    config.closedLoop
+        .p(ElevatorConstants.kP)
+        .i(ElevatorConstants.kI)
+        .d(ElevatorConstants.kD);
 
-    sparkyRightConfig
-        .inverted(false)
-        .idleMode(IdleMode.kCoast)
-        .smartCurrentLimit(10);
-    sparkyRightConfig.encoder
-      .positionConversionFactor(6)
-      .velocityConversionFactor(1.0/10.0);
+    sparkyLeft.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    config.follow(sparkyLeft, true);
+    sparkyRight.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    sparkyLeft.configure(sparkyLeftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    sparkyRight.configure(sparkyRightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    encoder = sparkyLeft.getEncoder();
+    feedbackLeft = sparkyLeft.getClosedLoopController();
+    feedbackRight = sparkyRight.getClosedLoopController();
+    encoder.setPosition(0);
     }
 
 
   @Override
+
   public void updateInputs(ElevatorInputs inputs) {
-    inputs.position = sparkyLeft.getEncoder().getPosition();
+    Logger.recordOutput("Elevator/Encoder", encoder.getVelocity());
+
+    inputs.position = encoder.getVelocity();
     inputs.encoderVelocity = sparkyLeft.getEncoder().getVelocity();
 
     inputs.leftAppliedVolts = sparkyLeft.getAppliedOutput();
@@ -64,35 +79,15 @@ public class ElevatorIOSparkMax implements ElevatorIO {
   }
 
   @Override
-  public void setElevator(double setPoint) {
-
-    if(inputs.position == 60){  //turns motors off if it reaches 60 testing hardstop
-      sparkyLeft.set(0);
-      sparkyRight.set(0);
-    }
-
-    sparkyLeft.set(setPoint);
-    sparkyRight.set(setPoint);
-
-    Logger.recordOutput("Encoder", sparkyLeft.getEncoder().getPosition());
-
-    Logger.recordOutput("Sparky Left Output", setPoint);
-    Logger.recordOutput("Sparky Right Output", setPoint);
+  public void setElevator(double setPoint, double voltage) {
+    feedbackLeft.setReference(setPoint, ControlType.kPosition, ClosedLoopSlot.kSlot0, voltage);
+    Logger.recordOutput("Elevator/Sparky Left Output", setPoint);
+    Logger.recordOutput("Elevator/Sparky Right Output", setPoint);
   }
-  
-  @Override
-  public void setManualSpeed(double volts) {
-    sparkyLeft.set(volts);
-    sparkyRight.set(volts);
-
-    Logger.recordOutput("left Volts", volts);
-    Logger.recordOutput("right Volts", volts);
-  }
-
-  @Override
-  public void resetEncoder(double position) {
-   inputs.position = 0.0;
-  }
+  // @Override
+  // public void resetEncoder(double position) {
+  //   encoder.setPosition(0.0);
+  // }
 }
 
 
