@@ -13,8 +13,11 @@
 
 package frc.robot.Subsystem.Swerve;
 
+import com.ctre.phoenix6.StatusSignal;
 import com.revrobotics.REVLibError;
 import com.revrobotics.spark.SparkBase;
+
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import java.util.ArrayList;
@@ -33,7 +36,7 @@ import frc.robot.Constants.DriveConstants;;
 public class SparkOdometryThread {
   private final List<SparkBase> sparks = new ArrayList<>();
   private final List<DoubleSupplier> sparkSignals = new ArrayList<>();
-  private final List<DoubleSupplier> genericSignals = new ArrayList<>();
+  private final List<Double> genericSignals = new ArrayList<>();
   private final List<Queue<Double>> sparkQueues = new ArrayList<>();
   private final List<Queue<Double>> genericQueues = new ArrayList<>();
   private final List<Queue<Double>> timestampQueues = new ArrayList<>();
@@ -59,12 +62,11 @@ public class SparkOdometryThread {
   }
 
   /** Registers a Spark signal to be read from the thread. */
-  public Queue<Double> registerSignal(SparkBase spark, DoubleSupplier signal) {
+  public Queue<Double> registerSignal(SparkBase spark, Double signal) {
     Queue<Double> queue = new ArrayBlockingQueue<>(20);
     Drive.odometryLock.lock();
     try {
       sparks.add(spark);
-      sparkSignals.add(signal);
       sparkQueues.add(queue);
     } finally {
       Drive.odometryLock.unlock();
@@ -73,7 +75,7 @@ public class SparkOdometryThread {
   }
 
   /** Registers a generic signal to be read from the thread. */
-  public Queue<Double> registerSignal(DoubleSupplier signal) {
+  public Queue<Double> registerSignal(Double signal) {
     Queue<Double> queue = new ArrayBlockingQueue<>(20);
     Drive.odometryLock.lock();
     try {
@@ -120,7 +122,7 @@ public class SparkOdometryThread {
           sparkQueues.get(i).offer(sparkValues[i]);
         }
         for (int i = 0; i < genericSignals.size(); i++) {
-          genericQueues.get(i).offer(genericSignals.get(i).getAsDouble());
+          genericQueues.get(i).offer(genericSignals.get(i).doubleValue());
         }
         for (int i = 0; i < timestampQueues.size(); i++) {
           timestampQueues.get(i).offer(timestamp);

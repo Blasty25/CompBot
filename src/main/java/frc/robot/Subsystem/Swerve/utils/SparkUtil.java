@@ -25,8 +25,8 @@ public class SparkUtil {
   public static boolean sparkStickyFault = false;
 
   /** Processes a value from a Spark only if the value is valid. */
-  public static void ifOk(SparkBase spark, DoubleSupplier supplier, DoubleConsumer consumer) {
-    double value = supplier.getAsDouble();
+  public static void ifOk(SparkBase spark, Double supplier, DoubleConsumer consumer) {
+    double value = supplier.doubleValue();
     if (spark.getLastError() == REVLibError.kOk) {
       consumer.accept(value);
     } else {

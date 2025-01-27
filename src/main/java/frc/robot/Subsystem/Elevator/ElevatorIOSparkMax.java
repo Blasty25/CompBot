@@ -13,81 +13,113 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.ctre.phoenix6.signals.ControlModeValue;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.Constants.ElevatorConstants;
 
 /** Add your docs here. */
 public class ElevatorIOSparkMax implements ElevatorIO {
-    
+
     ElevatorInputsAutoLogged inputs;
 
     public SparkMax sparkyLeft;
     public SparkMax sparkyRight;
+    private SparkAbsoluteEncoder encoder;
 
-    private final RelativeEncoder encoder;
     private final SparkClosedLoopController feedbackLeft;
-    private final SparkClosedLoopController feedbackRight;
 
-    public ElevatorIOSparkMax(){
+    public ElevatorIOSparkMax() {
 
-    inputs = new ElevatorInputsAutoLogged();
-    sparkyLeft = new SparkMax(30, MotorType.kBrushless);
-    sparkyRight = new SparkMax( 31,MotorType.kBrushless);
+        inputs = new ElevatorInputsAutoLogged();
+        sparkyLeft = new SparkMax(30, MotorType.kBrushless);
+        sparkyRight = new SparkMax(31, MotorType.kBrushless);
 
-    SparkMaxConfig config = new SparkMaxConfig();
-    config
-        .smartCurrentLimit(40)
-        .idleMode(IdleMode.kCoast);
-    config.encoder
-        .positionConversionFactor(ElevatorConstants.positionConversionFactor)
-        .velocityConversionFactor(ElevatorConstants.velocityConversionFactor);
-    config.closedLoop
-        .p(ElevatorConstants.kP)
-        .i(ElevatorConstants.kI)
-        .d(ElevatorConstants.kD);
+        SparkMaxConfig leftConfig = new SparkMaxConfig();
+        SparkMaxConfig rightConfig = new SparkMaxConfig();
+        leftConfig
+                .smartCurrentLimit(40)
+                .idleMode(IdleMode.kCoast);
+        leftConfig.encoder
+                .positionConversionFactor(ElevatorConstants.positionConversionFactor)
+                .velocityConversionFactor(ElevatorConstants.velocityConversionFactor);
+        leftConfig.closedLoop
+                .feedbackSensor(FeedbackSensor.kAnalogSensor)
+                .positionWrappingInputRange(0, 10)
+                .p(ElevatorConstants.kP)
+                .i(ElevatorConstants.kI)
+                .d(ElevatorConstants.kD);
 
-    sparkyLeft.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    config.follow(sparkyLeft, true);
-    sparkyRight.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        rightConfig
+                .smartCurrentLimit(40)
+                .inverted(true)
+                .idleMode(IdleMode.kCoast);
+        rightConfig.encoder
+                .positionConversionFactor(ElevatorConstants.positionConversionFactor)
+                .velocityConversionFactor(ElevatorConstants.velocityConversionFactor);
+        rightConfig.closedLoop
+                .p(ElevatorConstants.kP)
+                .i(ElevatorConstants.kI)
+                .d(ElevatorConstants.kD);
 
-    encoder = sparkyLeft.getEncoder();
-    feedbackLeft = sparkyLeft.getClosedLoopController();
-    feedbackRight = sparkyRight.getClosedLoopController();
-    encoder.setPosition(0);
+        sparkyLeft.configure(leftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        sparkyRight.configure(rightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+        encoder = sparkyLeft.getAbsoluteEncoder();
+        feedbackLeft = sparkyLeft.getClosedLoopController();
     }
 
+    @Override
+    public void updateInputs(ElevatorInputs inputs) {
 
-  @Override
+        inputs.elevatorPosition = sparkyLeft.getEncoder().getPosition();
+        inputs.encoderVelocity = sparkyLeft.getEncoder().getVelocity();
 
-  public void updateInputs(ElevatorInputs inputs) {
-    Logger.recordOutput("Elevator/Encoder", encoder.getVelocity());
+        inputs.leftAppliedVolts = sparkyLeft.getAppliedOutput();
+        inputs.rightAppliedVolts = sparkyRight.getAppliedOutput();
 
-    inputs.position = encoder.getVelocity();
-    inputs.encoderVelocity = sparkyLeft.getEncoder().getVelocity();
+        inputs.leftSparkTemp = sparkyLeft.getMotorTemperature();
+        inputs.rightSparkTemp = sparkyRight.getMotorTemperature();
+    }
 
-    inputs.leftAppliedVolts = sparkyLeft.getAppliedOutput();
-    inputs.rightAppliedVolts = sparkyRight.getAppliedOutput();
+    @Override
+    public void setManualSpeed(double output) {
 
-    inputs.leftSparkTemp = sparkyLeft.getMotorTemperature();
-    inputs.rightSparkTemp = sparkyRight.getMotorTemperature();
-  }
+    sparkyLeft.getClosedLoopController().setReference(output, ControlType.kPosition);
+    sparkyRight.getClosedLoopController().setReference(output, ControlType.kPosition);
 
-  @Override
-  public void setElevator(double setPoint, double voltage) {
-    feedbackLeft.setReference(setPoint, ControlType.kPosition, ClosedLoopSlot.kSlot0, voltage);
-    Logger.recordOutput("Elevator/Sparky Left Output", setPoint);
-    Logger.recordOutput("Elevator/Sparky Right Output", setPoint);
-  }
-  // @Override
-  // public void resetEncoder(double position) {
-  //   encoder.setPosition(0.0);
-  // }
+    }
 }
 
 
+
+
+
+
+                
+
+
+
+/*
+ 
+if (inputs.elevatorPosition >= 0.9) {
+    sparkyLeft.getClosedLoopController().setReference((-Math.PI * ElevatorConstants.maxRotations),
+            ControlType.kPosition);
+    sparkyRight.getClosedLoopController().setReference((-Math.PI * ElevatorConstants.maxRotations),
+            ControlType.kPosition);
+}
+if(inputs.elevatorPosition <= 0.2){
+    sparkyLeft.getClosedLoopController().setReference((Math.PI * ElevatorConstants.maxRotations),
+            ControlType.kPosition);
+    sparkyRight.getClosedLoopController().setReference((Math.PI * ElevatorConstants.maxRotations),
+            ControlType.kPosition);
+}
+ */

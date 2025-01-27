@@ -1,7 +1,8 @@
 // Copyright (c) FIRST and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
-
+//YAP YAP YIPPEEEEE :)
+// By Blasty25
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -11,25 +12,32 @@ import edu.wpi.first.math.util.Units;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
 
+
 /** Add your docs here. */
 public class Constants {
   public class ElevatorConstants {
     public static final int sparkyLeft = 30;
     public static final int sparkyRight = 31;
 
-    public static final double kP = 8.8431;
+    public static final double kP = 4.5;
     public static final double kI = 0.0;
     public static final double kD = 1.4176;
     
     public static final double kS = 0.39969; 
     public static final double kG = 0.14159;
     public static final double kV = 4.9841;
-    public static final double kA =  0.54919;
+    public static final double kA =  0.64919;
+
+    public static final double radius = Units.inchesToMeters(0.9175);
+    public static final double gearing = 6.75;
 
     public static final double maxElevatorSpeed = 0.2;
 
-    public static final double positionConversionFactor = 2.0 * Math.PI * Units.inchesToMeters(0.918) / 6;
-    public static final double velocityConversionFactor = positionConversionFactor / 60.0;
+    public static final double positionConversionFactor =  2.0 * Math.PI * radius / gearing;
+    public static final double velocityConversionFactor = positionConversionFactor / 60.0; //Me don't think this factor is correct
+
+    public static final double maxRotations = 2;
+    public static final double setGoal = Math.PI * 2;
   }
 
   public final class MapleSimSwerve {
@@ -37,17 +45,7 @@ public class Constants {
     public static final double turnGearRatio = 1.7;
     public static final double wheelDiameter = Units.metersToInches(0.0889);
   }
-
-
-  public static enum currentMode {
-    Real,
-    Sim,
-    Replay
-  }
-
-  public static final currentMode mode = currentMode.Sim;
-
-
+  
   public class DriveConstants {
     public static final double maxSpeedMetersPerSec = 4.8;
     public static final double odometryFrequency = 100.0; // Hz
@@ -104,7 +102,7 @@ public class Constants {
     public static final double driveSimKv = 0.0789;
 
     // Turn motor configuration
-    public static final boolean turnInverted = false;
+    public static final boolean turnInverted = true;
     public static final int turnMotorCurrentLimit = 20;
     public static final double turnMotorReduction = 9424.0 / 203.0;
     public static final DCMotor turnGearbox = DCMotor.getNeo550(1);

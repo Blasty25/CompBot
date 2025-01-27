@@ -62,7 +62,7 @@ public class RobotContainer {
         //         () -> controller.getLeftY(),
         //         () -> controller.getLeftX(),
         //         () -> -controller.getRightX()));
-        controller.rightTrigger().whileTrue(new setManualSpeed(realElevator));
+        controller.a().onTrue(new setManualSpeed(elevator));
     }
 
   public Command getAutonomousCommand() {
