@@ -20,10 +20,6 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.Constants.ElevatorConstants;
 
 /** Add your docs here. */
@@ -33,9 +29,6 @@ public class ElevatorIOSparkMax implements ElevatorIO {
 
     public SparkMax sparkyLeft;
     public SparkMax sparkyRight;
-    private SparkAbsoluteEncoder encoder;
-
-    private final SparkClosedLoopController feedbackLeft;
 
     public ElevatorIOSparkMax() {
 
@@ -73,8 +66,6 @@ public class ElevatorIOSparkMax implements ElevatorIO {
         sparkyLeft.configure(leftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         sparkyRight.configure(rightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        encoder = sparkyLeft.getAbsoluteEncoder();
-        feedbackLeft = sparkyLeft.getClosedLoopController();
     }
 
     @Override
@@ -98,13 +89,6 @@ public class ElevatorIOSparkMax implements ElevatorIO {
 
     }
 }
-
-
-
-
-
-
-                
 
 
 
