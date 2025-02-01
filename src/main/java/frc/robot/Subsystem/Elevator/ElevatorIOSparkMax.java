@@ -4,6 +4,8 @@
 
 package frc.robot.Subsystem.Elevator;
 
+import static edu.wpi.first.units.Units.Rotations;
+
 import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.spark.SparkBase.ControlType;
@@ -18,6 +20,9 @@ import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+
+import edu.wpi.first.units.measure.Angle;
+
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 
 import frc.robot.Constants.ElevatorConstants;
@@ -40,7 +45,8 @@ public class ElevatorIOSparkMax implements ElevatorIO {
         SparkMaxConfig rightConfig = new SparkMaxConfig();
         leftConfig
                 .smartCurrentLimit(40)
-                .idleMode(IdleMode.kCoast);
+                .idleMode(IdleMode.kCoast)
+                .inverted(false);
         leftConfig.encoder
                 .positionConversionFactor(ElevatorConstants.positionConversionFactor)
                 .velocityConversionFactor(ElevatorConstants.velocityConversionFactor);
@@ -65,7 +71,6 @@ public class ElevatorIOSparkMax implements ElevatorIO {
 
         sparkyLeft.configure(leftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         sparkyRight.configure(rightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
     }
 
     @Override
@@ -82,28 +87,8 @@ public class ElevatorIOSparkMax implements ElevatorIO {
     }
 
     @Override
-    public void setManualSpeed(double output) {
-
-    sparkyLeft.getClosedLoopController().setReference(output, ControlType.kPosition);
-    sparkyRight.getClosedLoopController().setReference(output, ControlType.kPosition);
-
+    public void setManualSpeed(double output){
+    sparkyLeft.set(output);
+    sparkyRight.set(output);
     }
 }
-
-
-
-/*
- 
-if (inputs.elevatorPosition >= 0.9) {
-    sparkyLeft.getClosedLoopController().setReference((-Math.PI * ElevatorConstants.maxRotations),
-            ControlType.kPosition);
-    sparkyRight.getClosedLoopController().setReference((-Math.PI * ElevatorConstants.maxRotations),
-            ControlType.kPosition);
-}
-if(inputs.elevatorPosition <= 0.2){
-    sparkyLeft.getClosedLoopController().setReference((Math.PI * ElevatorConstants.maxRotations),
-            ControlType.kPosition);
-    sparkyRight.getClosedLoopController().setReference((Math.PI * ElevatorConstants.maxRotations),
-            ControlType.kPosition);
-}
- */

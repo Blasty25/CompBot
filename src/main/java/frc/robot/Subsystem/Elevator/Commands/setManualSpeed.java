@@ -5,14 +5,17 @@
 package frc.robot.Subsystem.Elevator.Commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Subsystem.Elevator.ElevatorInputsAutoLogged;
 import frc.robot.Subsystem.Elevator.ElevatorSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class setManualSpeed extends Command {
   public ElevatorSubsystem elevator;
+  private ElevatorInputsAutoLogged inputs;
 
   /** Creates a new setManualSpeed. */
   public setManualSpeed(ElevatorSubsystem elevator) {
+    inputs = new ElevatorInputsAutoLogged();
     this.elevator = elevator;
   }
 
@@ -23,5 +26,7 @@ public class setManualSpeed extends Command {
   }
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public boolean isFinished() {
+    return Math.abs(inputs.elevatorPosition - 44.0) < 1.0;
+  }
 }

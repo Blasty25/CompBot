@@ -43,8 +43,6 @@ import static frc.robot.Subsystem.Swerve.utils.SparkUtil.*;
 import java.util.Queue;
 import java.util.function.DoubleSupplier;
 
-import org.dyn4j.dynamics.joint.AngleJoint;
-
 /**
  * Module IO implementation for Spark Flex drive motor controller, Spark Max turn motor controller,
  * and duty cycle absolute encoder.
@@ -56,11 +54,7 @@ public class ModuleIOSpark implements ModuleIO {
   private final SparkBase driveSpark;
   private final SparkBase turnSpark;
   private final RelativeEncoder driveEncoder;
-  private final AnalogEncoder fREncoer = new AnalogEncoder(0);
-  private final AnalogEncoder fLEncoder = new AnalogEncoder(3);
-  private final AnalogEncoder bLEncoder = new AnalogEncoder(1);
-  private final AnalogEncoder bREncoder = new AnalogEncoder(2);
-
+  private final AnalogEncoder turnEncoder;
 
   // Closed loop controllers
   private final SparkClosedLoopController driveController;
@@ -94,6 +88,16 @@ public class ModuleIOSpark implements ModuleIO {
               default -> 0;
             },
             MotorType.kBrushless);
+    turnEncoder =
+            new AnalogEncoder(
+              switch(module) {
+                case 0 -> 1;
+                case 1 -> 2;
+                case 2 -> 3;
+                case 3 -> 4;
+                default -> 0;
+              }
+            );
     turnSpark =
         new SparkMax(
             switch (module) {
@@ -187,7 +191,7 @@ public class ModuleIOSpark implements ModuleIO {
     drivePositionQueue =
         SparkOdometryThread.getInstance().registerSignal(driveSpark, driveEncoder.getPosition());
     turnPositionQueue =
-        SparkOdometryThread.getInstance().registerSignal(turnSpark, fLEncoder.get());
+        SparkOdometryThread.getInstance().registerSignal(turnSpark, turnEncoder.get());
   }
 
   @Override
@@ -207,7 +211,7 @@ public class ModuleIOSpark implements ModuleIO {
     sparkStickyFault = false;
     ifOk(
         turnSpark,
-        fLEncoder.get(),
+        turnEncoder.get(),
         (value) -> inputs.turnPosition = new Rotation2d(value).minus(zeroRotation));
     // ifOk(turnSpark, turnEncoder::getVelocity, (value) -> inputs.turnVelocityRadPerSec = value);
     ifOk(

@@ -26,7 +26,8 @@ public class Constants {
     public static final double kS = 0.39969; 
     public static final double kG = 0.14159;
     public static final double kV = 4.9841;
-    public static final double kA =  0.64919;
+    public static final double kA =  1;
+    //0.64919
 
     public static final double radius = Units.inchesToMeters(0.9175);
     public static final double gearing = 6.75;
