@@ -19,24 +19,21 @@ import frc.robot.Subsystem.Algae.Algae;
 import frc.robot.Subsystem.Algae.Command.setAlgae;
 import frc.robot.Subsystem.Corral.Corral;
 import frc.robot.Subsystem.Corral.Commands.setCorral;
-import frc.robot.Subsystem.Elevator.ElevatorIOSim;
-import frc.robot.Subsystem.Elevator.ElevatorIOSparkMax;
-import frc.robot.Subsystem.Elevator.ElevatorSubsystem;
-import frc.robot.Subsystem.Elevator.Commands.setManualSpeed;
 import frc.robot.Subsystem.Swerve.Drive;
 import frc.robot.Subsystem.Swerve.GyroIOPigeon2;
 import frc.robot.Subsystem.Swerve.ModuleIOSim;
 import frc.robot.Subsystem.Swerve.ModuleIOSpark;
 import frc.robot.Subsystem.Swerve.Commands.DriveCommands;
+import frc.robot.Subsystem.elevator.Elevator;
+import frc.robot.Subsystem.elevator.ElevatorIOReal;
+import frc.robot.Subsystem.elevator.ElevatorIOSim;
 
 public class RobotContainer {
   private CommandXboxController controller = new CommandXboxController(0);
-  // private Drive drive;
-  private ElevatorSubsystem elevator;
-  // private Algae algae;
-  // private Corral corral;
-  private ElevatorIOSim elevatorSim = new ElevatorIOSim();
-  private ElevatorIOSparkMax realElevator = new ElevatorIOSparkMax();
+  private Drive drive;
+  private Algae algae;
+  private Corral corral;
+  private Elevator elevator;
 
   public RobotContainer() {
 
@@ -47,34 +44,34 @@ public class RobotContainer {
       //     new ModuleIOSpark(1),
       //     new ModuleIOSpark(2),
       //     new ModuleIOSpark(3));
-      elevator = new ElevatorSubsystem(realElevator);
-      // algae = new Algae();
-      // corral = new Corral();
+      algae = new Algae();
+      corral = new Corral();
+      elevator = new Elevator(new ElevatorIOReal(30,21));
     } else {
-      // drive = new Drive(
-      //     new GyroIOPigeon2(),
-      //     new ModuleIOSim(),
-      //     new ModuleIOSim(),
-      //     new ModuleIOSim(),
-      //     new ModuleIOSim());
-      elevator = new ElevatorSubsystem(elevatorSim);
+      drive = new Drive(
+          new GyroIOPigeon2(),
+          new ModuleIOSim(),
+          new ModuleIOSim(),
+          new ModuleIOSim(),
+          new ModuleIOSim());
+      corral = new Corral();
+      elevator = new Elevator(new ElevatorIOSim());
     }
     configureBindings();
   }
 
   private void configureBindings() {
 
-        // drive.setDefaultCommand(
-        //     DriveCommands.joystickDrive(
-        //         drive,
-        //         () -> controller.getLeftY(),
-        //         () -> controller.getLeftX(),
-        //         () -> -controller.getRightX()));
-        controller.a().whileTrue(new setManualSpeed(elevator));
-        // controller.povUp().whileTrue(new setCorral(corral, 10));
-        // controller.povDown().whileTrue(new setCorral(corral, -10));
+        drive.setDefaultCommand(
+            DriveCommands.joystickDrive(
+                drive,
+                () -> controller.getLeftY(),
+                () -> controller.getLeftX(),
+                () -> -controller.getRightX()));
+        controller.rightTrigger().whileTrue(new setCorral(corral, 5));
         // controller.y().whileTrue(new setAlgae(algae, 1, 1));
         // controller.b().whileTrue(new setAlgae(algae, -1, -1));
+        controller.a().toggleOnTrue(elevator.nextLevel());
 
     }
 

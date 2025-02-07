@@ -1,29 +1,23 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
-package frc.robot.Subsystem.Elevator;
+package frc.robot.Subsystem.elevator;
 
 import org.littletonrobotics.junction.AutoLog;
 
-/** Add your docs here. */
 public interface ElevatorIO {
     @AutoLog
-    public static class ElevatorInputs{
-        public double leftAppliedVolts = 0.0;
-        public double rightAppliedVolts = 0.0;
-        public double leftSparkTemp = 0.0;
-        public double rightSparkTemp = 0.0;
-        public double encoderVelocity = 0.0;
-        public double elevatorPosition = 0.0;
+    public static class ElevatorIOInputs {
+        public double position = 0.0;
+        public double velocity = 0.0;
+
+        public int currentLevel = 0;
+        public int setLevel = 0;
+
+        public double[] voltages = new double[] {};
         public double[] currents = new double[] {};
     }
 
-    public default void updateInputs(ElevatorInputs inputs) {}
-
-    public default void setElevator(double setPoint, double voltage) {}
-
-    public default void setManualSpeed(double output) {}
+    public default void updateInputs(ElevatorIOInputs inputs) {}
 
     public default void setPosition(double position, double ffVoltage) {}
+
+    public default void reset() {}
 }

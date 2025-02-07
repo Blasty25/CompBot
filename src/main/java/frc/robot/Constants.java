@@ -15,31 +15,30 @@ import com.pathplanner.lib.config.RobotConfig;
 
 /** Add your docs here. */
 public class Constants {
+  public static final boolean tuningMode = false;
   public class ElevatorConstants {
     public static final int sparkyLeft = 30;
     public static final int sparkyRight = 31;
 
-    public static final double kP = 4.5;
+    public static final double kP = 1.1253;
     public static final double kI = 0.0;
-    public static final double kD = 1.4176;
+    public static final double kD = 0.0;
+
     
-    public static final double kS = 0.39969; 
-    public static final double kG = 0.14159;
-    public static final double kV = 4.9841;
-    public static final double kA =  1;
-    //0.64919
+    public static final double s = 0.37879;
+    public static final double g = 1.80439;
+    public static final double v = 4.9315;
+    public static final double a = 1.246;
 
     public static final double radius = Units.inchesToMeters(0.9175);
     public static final double gearing = 6.75;
 
-    public static final double maxElevatorSpeed = 0.2;
 
     public static final double positionConversionFactor =  2.0 * Math.PI * radius / gearing;
     public static final double velocityConversionFactor = positionConversionFactor / 60.0; //Me don't think this factor is correct
+    //2.0 * Math.PI * radius / gearing
 
-    public static final double maxRotations = 2;
-    public static final double setGoal = Math.PI * 2;
-  }
+    }
 
   public final class MapleSimSwerve {
     public static final double driveGearRatio = 2.5;

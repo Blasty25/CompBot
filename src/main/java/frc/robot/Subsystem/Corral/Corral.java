@@ -4,9 +4,13 @@
 
 package frc.robot.Subsystem.Corral;
 
+import java.util.function.DoubleSupplier;
+
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Corral extends SubsystemBase {
@@ -14,7 +18,7 @@ public class Corral extends SubsystemBase {
   TalonSRX rightRollar = new TalonSRX(22);
 
   public Corral() {
-    leftRollar.setInverted(true);
+    leftRollar.setInverted(false);
     rightRollar.setInverted(false);
 
     leftRollar.enableCurrentLimit(true);
@@ -24,6 +28,13 @@ public class Corral extends SubsystemBase {
   public void setSpeed(double volts){
     leftRollar.set(ControlMode.PercentOutput, volts);
     rightRollar.set(ControlMode.PercentOutput, volts);
+  }
+
+  public Command shooter(DoubleSupplier speed){
+    return new RunCommand(()->{
+      double volts = speed.getAsDouble();
+      setSpeed(volts);
+    }, this);
   }
 
   @Override

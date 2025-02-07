@@ -1,48 +1,42 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+package frc.robot.Subsystem.elevator;
 
-package frc.robot.Subsystem.Elevator;
+import static frc.robot.Subsystem.elevator.ElevatorConstants.*;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 
-/** Add your docs here. */
 public class ElevatorIOSim implements ElevatorIO {
-
-       private ElevatorSim sim = new ElevatorSim(
-        LinearSystemId.createElevatorSystem(DCMotor.getNEO(2), Units.lbsToKilograms(30.0), Units.inchesToMeters(0.9175), 6.75),
-        DCMotor.getNEO(2),
-        Units.inchesToMeters(0),
-        Units.inchesToMeters(44.0),
+    private ElevatorSim sim = new ElevatorSim(
+        LinearSystemId.createElevatorSystem(motor, mass, radius, gearing),
+        motor,
+        minHeight,
+        maxHeight,
         true,
-        Units.inchesToMeters(0)
+        startingHeight
     );
 
-    private PIDController feedback = new PIDController(5.8256,0, 1.0701);
+    private PIDController feedback = new PIDController(p, i, d);
     private double feedforward = 0.0;
     
     @Override
-    public void updateInputs(ElevatorInputs inputs) {
+    public void updateInputs(ElevatorIOInputs inputs) {
         double position = sim.getPositionMeters();
 
         double voltage = MathUtil.clamp(feedforward + feedback.calculate(position), -12.0, 12.0);
         sim.setInputVoltage(voltage);
         sim.update(0.02);
 
-        inputs.elevatorPosition = position;
-        inputs.encoderVelocity = sim.getVelocityMetersPerSecond();
+        inputs.position = position;
+        inputs.velocity = sim.getVelocityMetersPerSecond();
+        inputs.voltages = new double[] {voltage};
         inputs.currents = new double[] {sim.getCurrentDrawAmps()};
     }
 
     @Override
-    public void setManualSpeed(double output) {
-        feedback.setSetpoint(output);
-        sim.setInput(output);
+    public void setPosition(double position, double ffVoltage) {
+        feedforward = ffVoltage;
+        feedback.setSetpoint(position);
     }
-
 }
